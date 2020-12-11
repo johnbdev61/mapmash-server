@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 function makeMashesArray() {
   return [
     {
@@ -33,6 +34,10 @@ function makeMaliciousMash() {
     game_title:
       'Naughty naughty very naughty &lt;script&gt;alert("xss");&lt;/script&gt;',
     notes: `Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`,
+  }
+  return {
+    maliciousMash,
+    expectedMash,
   }
 }
 
