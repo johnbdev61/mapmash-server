@@ -1,34 +1,38 @@
-require("dotenv").config();
-const express = require("express");
-const morgan = require("morgan");
-const cors = require("cors");
-const helmet = require("helmet");
-const { NODE_ENV } = require("./config");
-// const someRouter = require('./some-routers/some-router');
+/* eslint-disable semi */
+require('dotenv').config()
+const express = require('express')
+const morgan = require('morgan')
+const cors = require('cors')
+const helmet = require('helmet')
+const { NODE_ENV } = require('./config')
+const mashesRouter = require('../src/mashes/mashes-router')
+const usersRouter = require('../src/users/users-router')
 
-const morganOption = NODE_ENV === "production" ? "tiny" : "common";
+const morganOption = NODE_ENV === 'production' ? 'tiny' : 'common'
 
-const app = express();
-app.use(morgan(morganOption));
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
+const app = express()
+app.use(morgan(morganOption))
+app.use(helmet())
+app.use(cors())
+app.use(express.json())
 
-// app.use("/anendpoint", someRouter);
+app.use('/api/mashes', mashesRouter)
+app.use('/api/:mash_id', mashesRouter)
+app.use('/api/users', usersRouter)
 
 app.get('/', (req, res) => {
-  res.send('Hello, boilerplate!')
-});
+  res.send('Welcome to the Map Mash API!')
+})
 
 app.use(function errorHandler(error, req, res, next) {
-  let response;
-  if (NODE_ENV === "production") {
-    response = { error: { message: "server error" } };
+  let response
+  if (NODE_ENV === 'production') {
+    response = { error: { message: 'server error' } }
   } else {
-    console.error("error");
-    response = { message: error.message, error };
+    console.error('error')
+    response = { message: error.message, error }
   }
-  res.status(500).json(response);
-});
+  res.status(500).json(response)
+})
 
-module.exports = app;
+module.exports = app
