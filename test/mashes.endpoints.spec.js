@@ -83,5 +83,27 @@ describe('Mashes Endpoints', () => {
           .expect(404, { error: { message: `Mash does not exist` } })
       })
     })
+
+    context('Given there are mashes in the database', () => {
+      const testUsers = makeUsersArray()
+      const testMashes = makeMashesArray()
+
+      beforeEach('insert mashes', () => {
+        return db
+          .into('users')
+          .insert(testUsers)
+          .then(() => {
+            return db.into('mashes').insert(testMashes)
+          })
+      })
+
+      it('ressonds with 200 and the specified mash', () => {  //THIS RESPONDS WITH AN ERROR BECAUSE OF THE EMPTY BINDS KEY
+        const mashId = 2
+        const expectedMash = testMashes[mashId - 1]
+        return supertest(app)
+          .get(`/api/mashes/${mashId}`)
+          .expect(200, expectedMash)
+      })
+    })
   })
 })
