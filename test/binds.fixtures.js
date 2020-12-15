@@ -3,7 +3,7 @@ function makeBindsArray() {
   return [
     {
       id: 1,
-      mash_id: 2,
+      mash_id: 1,
       key_input: 'Y Button',
       key_action: 'Switch Weapon',
     },
@@ -15,7 +15,7 @@ function makeBindsArray() {
     },
     {
       id: 3,
-      mash_id: 2,
+      mash_id: 3,
       key_input: 'A Button',
       key_action: 'Jump',
     },
@@ -27,11 +27,9 @@ function makeMaliciousBind() {
     id: 666,
     key_input: 'A Button',
     key_action: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`,
-    date_modified: new Date().toISOString(),
   }
   const expectedBind = {
     ...maliciousBind,
-    key_input: 'A Button',
     key_action: `Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`,
   }
   return {

@@ -9,7 +9,7 @@ const { makeUsersArray } = require('./users.fixtures')
 const { truncateAllTables } = require('./test-helpers')
 const { getBindsByMash, getAllBinds } = require('../src/binds/binds-service')
 
-describe('Binds Endpoints', () => {
+describe.only('Binds Endpoints', () => {
   let db
 
   before('make knex instance', () => {
@@ -35,12 +35,16 @@ describe('Binds Endpoints', () => {
 
     context('Given there are binds in the database', () => {
       const testUsers = makeUsersArray()
+      const testMashes = makeMashesArray()
       const testBinds = makeBindsArray()
 
       beforeEach('insert binds', () => {
         return db
           .into('users')
           .insert(testUsers)
+          .then(() => {
+            return db.into('mashes').insert(testMashes)
+          })
           .then(() => {
             return db.into('bind').insert(testBinds)
           })
@@ -105,7 +109,6 @@ describe('Binds Endpoints', () => {
       it('responds with 200 and the specified bind', () => {
         const bindId = 2
         const expectedBind = testBinds[bindId - 1]
-        expectedBind.mash_id = testBinds
         return supertest(app)
           .get(`/api/binds/${bindId}`)
           .expect(200, expectedBind)
@@ -117,7 +120,7 @@ describe('Binds Endpoints', () => {
 
       beforeEach('insert malicious bind', () => {
         return db
-          .into('bind')
+          .into('users')
           .insert(testUsers)
           .then(() => {
             return db.into('bind').insert([maliciousBind])
@@ -170,12 +173,16 @@ describe('Binds Endpoints', () => {
 
     context('Given there is a bind in the database matching id', () => {
       const testUsers = makeUsersArray()
+      const testMashes = makeMashesArray()
       const testBinds = makeBindsArray()
 
       beforeEach('insert binds', () => {
         return db
           .into('users')
           .insert(testUsers)
+          .then(() => {
+            return db.into('mashes').insert(testMashes)
+          })
           .then(() => {
             return db.into('bind').insert(testBinds)
           })
@@ -229,7 +236,6 @@ describe('Binds Endpoints', () => {
           ...testBinds[idToUpdate - 1],
           ...updateBind,
         }
-        expectedBind.mash_id = testBinds
         return supertest(app)
           .patch(`/api/binds/${idToUpdate}`)
           .send(updateBind)
@@ -248,7 +254,6 @@ describe('Binds Endpoints', () => {
           ...testBinds[idToUpdate - 1],
           ...updateBind,
         }
-        expectedBind.mash_id = testBinds
         return supertest(app)
           .patch(`/api/binds/${idToUpdate}`)
           .send({

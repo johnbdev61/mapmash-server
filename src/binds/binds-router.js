@@ -73,19 +73,12 @@ bindsRouter
       .catch(next)
   })
   .get((req, res, next) => {
-    BindsService.getBindsByMash(req.app.get('db'), req.params.mash_id).then(
-      (binds) => {
-        res
-          .json({
-            id: res.mash.id,
-            game_title: xss(res.mash.game_title), // sanitize title
-            notes: xss(res.mash.notes), // sanitize content
-            binds,
-            date_modified: res.mash.date_modified,
-          })
-          .catch(next)
-      }
-    )
+    res.json({
+      id: res.bind.id,
+      mash_id: res.bind.mash_id,
+      key_input: res.bind.key_input,
+      key_action: xss(res.bind.key_action),
+    })
   })
   .delete((req, res, next) => {
     BindsService.deleteBind(req.app.get('db'), req.params.bind_id)
