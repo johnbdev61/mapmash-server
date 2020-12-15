@@ -22,6 +22,23 @@ function makeMashesArray() {
   ]
 }
 
+function makeBindsArray() {
+  return [
+    {
+      id: 2,
+      mash_id: 2,
+      key_input: 'Y Button',
+      key_action: 'Switch Weapon',
+    },
+    {
+      id: 3,
+      mash_id: 2,
+      key_input: 'X Button',
+      key_action: 'Reload',
+    },
+  ]
+}
+
 function makeMaliciousMash() {
   const maliciousMash = {
     id: 666,
@@ -41,4 +58,4 @@ function makeMaliciousMash() {
   }
 }
 
-module.exports = { makeMashesArray, makeMaliciousMash }
+module.exports = { makeMashesArray, makeBindsArray, makeMaliciousMash }

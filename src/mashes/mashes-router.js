@@ -47,8 +47,9 @@ mashesRouter
     }
 
     MashesService.insertMash(req.app.get('db'), newMash)
-      .then((mash) => {
-        res.status(201).location(`/${mash.id}`).json(mash)
+      .then((mashes) => {
+        const mash = mashes[0]
+        res.status(201).location(`/api/mashes/${mash.id}`).json(mash)
       })
       .catch(next)
   })
@@ -87,7 +88,7 @@ mashesRouter
     )
   })
   .delete((req, res, next) => {
-    MashesService.deleteMash(req.app.get('db'), req.params.article_id)
+    MashesService.deleteMash(req.app.get('db'), req.params.mash_id)
       .then(() => {
         res.status(204).end()
       })
