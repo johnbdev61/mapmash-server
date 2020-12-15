@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 const BindsService = {
   getAllBinds(knex) {
     return knex.select('*').from('bind')
