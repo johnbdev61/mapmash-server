@@ -6,7 +6,7 @@ const app = require('../src/app')
 const { makeUsersArray, makeMaliciousUser } = require('./users.fixtures')
 const { truncateAllTables } = require('./test-helpers')
 
-describe.only('Users Endponts', () => {
+describe('Users Endponts', () => {
   let db
 
   before('make knex instance', () => {
