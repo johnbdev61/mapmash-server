@@ -15,4 +15,22 @@ function makeUsersArray() {
   ]
 }
 
-module.exports = { makeUsersArray }
+function makeMaliciousUser() {
+  const maliciousUser = {
+    id: 666,
+    username: 'Naughty naughty very naughty <script>alert("xss");</script>',
+    password: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`,
+  }
+  const expectedUser = {
+    ...maliciousUser,
+    username:
+      'Naughty naughty very naughty &lt;script&gt;alert("xss");&lt;/script&gt;',
+    password: `Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`,
+  }
+  return {
+    maliciousUser,
+    expectedUser,
+  }
+}
+
+module.exports = { makeUsersArray, makeMaliciousUser }

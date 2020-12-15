@@ -10,7 +10,7 @@ const jsonParser = express.json()
 const serializeUser = (user) => ({
   id: user.id,
   username: xss(user.username),
-  date_modified: user.date_modified,
+  password: xss(user.password),
 })
 
 usersRouter
@@ -25,7 +25,7 @@ usersRouter
   })
   .post(jsonParser, (req, res, next) => {
     const { username, password } = req.body
-    const newUser = { username }
+    const newUser = { username, password }
 
     for (const [key, value] of Object.entries(newUser)) {
       if (value == null) {
