@@ -24,25 +24,40 @@ usersRouter
       .catch(next)
   })
   .post(jsonParser, (req, res, next) => {
-    const { username, password } = req.body
-    const newUser = { username, password }
+    const { password, username } = req.body
 
-    for (const [key, value] of Object.entries(newUser)) {
-      if (value == null) {
+    for (const field of ['username', 'password'])
+      if (!req.body[field])
         return res.status(400).json({
-          error: { message: `Missing '${key}' in request body` },
+          error: `Missing '${field}' in request body`,
         })
-      }
-    }
 
-    newUser.password = password
+    // TODO: check username doesn't start with spaces
 
-    UsersService.insertUser(req.app.get('db'), newUser)
-      .then((user) => {
-        res
-          .status(201)
-          .location(path.posix.join(req.originalUrl, `/${user.id}`))
-          .json(serializeUser(user))
+    const passwordError = UsersService.validatePassword(password)
+
+    if (passwordError) return res.status(400).json({ error: passwordError })
+
+    UsersService.hasUserWithUserName(req.app.get('db'), username)
+      .then((hasUserWithUserName) => {
+        if (hasUserWithUserName)
+          return res.status(400).json({ error: `Username already taken` })
+
+        return UsersService.hashPassword(password).then((hashedPassword) => {
+          const newUser = {
+            username,
+            password: hashedPassword,
+          }
+
+          return UsersService.insertUser(req.app.get('db'), newUser).then(
+            (user) => {
+              res
+                .status(201)
+                .location(path.posix.join(req.originalUrl, `/${user.id}`))
+                .json(UsersService.serializeUser(user))
+            }
+          )
+        })
       })
       .catch(next)
   })

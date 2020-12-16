@@ -2,6 +2,7 @@
 const express = require('express')
 const MashesService = require('./mashes-service')
 const xss = require('xss')
+const { requireAuth } = require('../middleware/jwt-auth')
 
 const mashesRouter = express.Router()
 const jsonParser = express.json()
@@ -26,11 +27,12 @@ mashesRouter
       .then((mashes) => res.json(mashes))
       .catch(next)
   })
-  .post((req, res, next) => {
+  .post(jsonParser, requireAuth, (req, res, next) => {
     const { game_title, notes } = req.body
     let newMash = {
       game_title,
       notes,
+      author_id: req.user.id,
     }
 
     for (const [key, value] of Object.entries(newMash)) {
@@ -87,14 +89,14 @@ mashesRouter
       }
     )
   })
-  .delete((req, res, next) => {
+  .delete(jsonParser, requireAuth, (req, res, next) => {
     MashesService.deleteMash(req.app.get('db'), req.params.mash_id)
       .then(() => {
         res.status(204).end()
       })
       .catch(next)
   })
-  .patch(jsonParser, (req, res, next) => {
+  .patch(jsonParser, requireAuth, (req, res, next) => {
     const { game_title, notes } = req.body
     const mashToUpdate = { game_title, notes }
     const numberOfValues = Object.values(mashToUpdate).filter(Boolean).length
@@ -109,7 +111,7 @@ mashesRouter
 
     MashesService.updateMash(
       req.app.get('db'),
-      req.params.mash_id, // JOHN: DOUBLE CHECK FOR ERROR
+      req.params.mash_id,
       mashToUpdate
     )
       .then((numRowsAffected) => {
@@ -117,5 +119,7 @@ mashesRouter
       })
       .catch(next)
   })
+
+mashesRouter.route('/votes/:mash_id')
 
 module.exports = mashesRouter
