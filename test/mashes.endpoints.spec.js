@@ -9,7 +9,7 @@ const {
   makeMaliciousMash,
 } = require('./mashes.fixtures')
 const { makeUsersArray } = require('./users.fixtures')
-const { truncateAllTables } = require('./test-helpers')
+const { truncateAllTables, makeAuthHeader } = require('./test-helpers')
 const { getBindsByMash, getAllMashes } = require('../src/mashes/mashes-service')
 
 describe.only('Mashes Endpoints', () => {
@@ -142,6 +142,11 @@ describe.only('Mashes Endpoints', () => {
 
   describe(`POST /api/mashes`, () => {
     context('When posting a mash with required field', () => {
+      const testUsers = makeUsersArray()
+      const testUser = testUsers[0]
+      beforeEach('insert mashes', () => {
+        return db.into('users').insert(testUsers)
+      })
       it('creates a game, responding with 201 and new mash', () => {
         const newMash = {
           game_title: 'Forza Motorsport 4',
@@ -149,12 +154,14 @@ describe.only('Mashes Endpoints', () => {
         }
         return supertest(app)
           .post('/api/mashes')
+          .set('Authorization', makeAuthHeader(testUser))
           .send(newMash)
           .expect(201)
           .expect((res) => {
             expect(res.body.game_title).to.eql(newMash.game_title)
             expect(res.body.notes).to.eql(newMash.notes)
             expect(res.body).to.have.property('id')
+            expect(res.body.author_id).to.eql(testUser.id)
             expect(res.headers.location).to.eql(`/api/mashes/${res.body.id}`)
             const expected = new Intl.DateTimeFormat('en-US').format(new Date())
             const actual = new Intl.DateTimeFormat('en-us').format(
@@ -168,6 +175,11 @@ describe.only('Mashes Endpoints', () => {
       })
     })
     context('When posting a mash without required field', () => {
+      const testUsers = makeUsersArray()
+      const testUser = testUsers[0]
+      beforeEach('insert mashes', () => {
+        return db.into('users').insert(testUsers)
+      })
       const requiredField = 'game_title'
       const newMash = {
         game_title: 'Battlefield 4',
@@ -179,6 +191,7 @@ describe.only('Mashes Endpoints', () => {
 
         return supertest(app)
           .post('/api/mashes')
+          .set('Authorization', makeAuthHeader(testUser))
           .send(newMash)
           .expect(400, {
             error: { message: `Missing ${requiredField} in request body` },
@@ -211,12 +224,18 @@ describe.only('Mashes Endpoints', () => {
       })
 
       it('responds with 204 and removes the mash', () => {
+        const testUsers = makeUsersArray()
+        const testUser = testUsers[0]
+        beforeEach('insert mashes', () => {
+          return db.into('users').insert(testUsers)
+        })
         const idToRemove = 2
         const expectedMashes = testMashes.filter(
           (mash) => mash.id !== idToRemove
         )
         return supertest(app)
           .delete(`/api/mashes/${idToRemove}`)
+          .set('Authorization', makeAuthHeader(testUser))
           .expect(204)
           .then((res) =>
             supertest(app).get(`/api/mashes`).expect(expectedMashes)
@@ -237,19 +256,26 @@ describe.only('Mashes Endpoints', () => {
 
     context('Given there are mashes in the database', () => {
       const testUsers = makeUsersArray()
+      const testUser = testUsers[0]
       const testMashes = makeMashesArray()
       const testBinds = makeBindsArray()
-
+      console.log('TESTUSER', testUsers)
       beforeEach('insert mashes', () => {
         return db
-          .into('users')
-          .insert(testUsers)
-          .then(() => {
-            return db.into('mashes').insert(testMashes)
-          })
-          .then(() => {
-            return db.into('bind').insert(testBinds)
-          })
+          .select('*')
+          .from('users')
+          .then((users) => console.log(users))
+          .then(() =>
+            db
+              .into('users')
+              .insert(testUsers)
+              .then(() => {
+                return db.into('mashes').insert(testMashes)
+              })
+              .then(() => {
+                return db.into('bind').insert(testBinds)
+              })
+          )
       })
 
       it('responds with 204 and updates the mash', () => {
@@ -265,6 +291,7 @@ describe.only('Mashes Endpoints', () => {
         expectedMash.binds = testBinds
         return supertest(app)
           .patch(`/api/mashes/${idToUpdate}`)
+          .set('Authorization', makeAuthHeader(testUser))
           .send(updateMash)
           .expect(204)
           .then((res) =>

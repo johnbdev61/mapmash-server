@@ -34,7 +34,7 @@ mashesRouter
       notes,
       author_id: req.user.id,
     }
-
+    console.log('REQUSER', req.user)
     for (const [key, value] of Object.entries(newMash)) {
       if (value == null) {
         return res.status(400).json({
@@ -46,6 +46,7 @@ mashesRouter
     newMash = {
       game_title: xss(game_title),
       notes: xss(notes),
+      author_id: req.user.id,
     }
 
     MashesService.insertMash(req.app.get('db'), newMash)
