@@ -259,7 +259,7 @@ describe.only('Mashes Endpoints', () => {
       const testUser = testUsers[0]
       const testMashes = makeMashesArray()
       const testBinds = makeBindsArray()
-      console.log('TESTUSER', testUsers)
+      beforeEach('cleanup', () => truncateAllTables(db)) //I DON"T KNOW WHY THIS HAD TO BE DONE
       beforeEach('insert mashes', () => {
         return db
           .select('*')
@@ -311,6 +311,7 @@ describe.only('Mashes Endpoints', () => {
         expectedMash.binds = testBinds
         return supertest(app)
           .patch(`/api/mashes/${idToUpdate}`)
+          .set('Authorization', makeAuthHeader(testUser))
           .send({
             ...updateMash,
             fieldToIgnore: 'should not be in GET response',

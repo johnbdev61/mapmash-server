@@ -3,7 +3,6 @@
 const jwt = require('jsonwebtoken')
 
 function truncateAllTables(db) {
-  console.log('truncate')
   return db.raw(`TRUNCATE mashes, users RESTART IDENTITY CASCADE;`)
 }
 
