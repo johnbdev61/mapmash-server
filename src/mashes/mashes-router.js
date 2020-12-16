@@ -3,26 +3,34 @@ const express = require('express')
 const MashesService = require('./mashes-service')
 const xss = require('xss')
 const { requireAuth } = require('../middleware/jwt-auth')
+const VotesService = require('./votes-service')
 
 const mashesRouter = express.Router()
 const jsonParser = express.json()
 
 mashesRouter
   .route('/')
-  .get((req, res, next) => {
+  .get(async (req, res, next) => {
+    async function getVotes(knex, mashes) {
+      const arr = []
+      for (let i = 0; i < mashes.length; i++) {
+        const vote = await VotesService.getVotesByMash(knex, mashes[i].id)
+        arr.push(vote)
+      }
+      return arr
+    }
     MashesService.getAllMashes(req.app.get('db'))
-      .then((mashes) => {
+      .then(async (mashes) => {
         if (mashes.length !== 0) {
-          mashes = mashes.map((mash) => {
-            return {
-              id: mash.id,
-              game_title: xss(mash.game_title), //sanitize content
-              notes: xss(mash.notes), // sanitize content
-              date_modified: mash.date_modified,
-            }
-          })
+          const votes = await getVotes(req.app.get('db'), mashes)
+          return mashes.map((mash, i) => ({
+            id: mash.id,
+            game_title: xss(mash.game_title), //sanitize content
+            notes: xss(mash.notes), // sanitize content
+            date_modified: mash.date_modified,
+            votes: votes[i],
+          }))
         }
-        return mashes
       })
       .then((mashes) => res.json(mashes))
       .catch(next)
@@ -90,6 +98,7 @@ mashesRouter
       }
     )
   })
+
   .delete(jsonParser, requireAuth, (req, res, next) => {
     MashesService.deleteMash(req.app.get('db'), req.params.mash_id)
       .then(() => {

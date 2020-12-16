@@ -9,6 +9,7 @@ const mashesRouter = require('./mashes/mashes-router')
 const usersRouter = require('./users/users-router')
 const bindsRouter = require('./binds/binds-router')
 const authRouter = require('./auth/auth-router')
+const VotesService = require('./mashes/votes-service')
 
 const morganOption = NODE_ENV === 'production' ? 'tiny' : 'common'
 
@@ -23,6 +24,7 @@ app.use('/api/users', usersRouter)
 app.use('/api/binds', bindsRouter)
 
 app.get('/', (req, res) => {
+  VotesService.getVotesByMash(req.app.get('db'), 1)
   res.send('Welcome to the Map Mash API!')
 })
 
