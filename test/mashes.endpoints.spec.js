@@ -12,7 +12,7 @@ const { makeUsersArray } = require('./users.fixtures')
 const { truncateAllTables, makeAuthHeader } = require('./test-helpers')
 const { getBindsByMash, getAllMashes } = require('../src/mashes/mashes-service')
 
-describe.only('Mashes Endpoints', () => {
+describe('Mashes Endpoints', () => {
   let db
 
   before('make knex instance', () => {

@@ -1,13 +1,15 @@
 /* eslint-disable semi */
-const { expect } = require('chai')
 const knex = require('knex')
-const supertest = require('supertest')
+const bcrypt = require('bcryptjs')
 const app = require('../src/app')
-const { makeUsersArray, makeMaliciousUser } = require('./users.fixtures')
+const { makeUsersArray } = require('./users.fixtures')
 const { truncateAllTables } = require('./test-helpers')
 
-describe('Users Endponts', () => {
+describe('Users Endpoints', function () {
   let db
+
+  const testUsers = makeUsersArray()
+  const testUser = testUsers[0]
 
   before('make knex instance', () => {
     db = knex({
@@ -23,197 +25,135 @@ describe('Users Endponts', () => {
 
   after('disconnect from db', () => db.destroy())
 
-  describe('GET /api/users', () => {
-    context('Given no users', () => {
-      it('responds with 200 and an empty list', () => {
-        return supertest(app).get('/api/users').expect(200, [])
-      })
-    })
-
-    context('Given there are users in the database', () => {
-      const testUsers = makeUsersArray()
-
-      beforeEach('insert users', () => {
-        return db.into('users').insert(testUsers)
-      })
-
-      it('responds with 200 and all of the users', () => {
-        return supertest(app).get('/api/users').expect(200, testUsers)
-      })
-    })
-
-    context(`Given an XSS attack user`, () => {
-      const { maliciousUser, expectedUser } = makeMaliciousUser()
-
-      beforeEach('insert malicious user', () => {
-        return db.into('users').insert([maliciousUser])
-      })
-
-      it('removes XSS attack content', () => {
-        return supertest(app)
-          .get('/api/users')
-          .expect(200)
-          .expect((res) => {
-            expect(res.body[0].username).to.eql(expectedUser.username)
-            expect(res.body[0].password).to.eql(expectedUser.password)
-          })
-      })
-    })
-  })
-
-  describe('GET /api/users/:user_id', () => {
-    context('Given no users', () => {
-      it('responds with 404', () => {
-        const userId = 123456
-        return supertest(app)
-          .get(`/api/users/${userId}`)
-          .expect(404, { error: { message: `User doesn't exist` } })
-      })
-    })
-
-    context('Given there are users in the database', () => {
-      const testUsers = makeUsersArray()
-
-      beforeEach('insert users', () => {
-        return db.into('users').insert(testUsers)
-      })
-
-      it('responds with 200 and the specified user', () => {
-        const userId = 2
-        const expectedUser = testUsers[userId - 1]
-        return supertest(app)
-          .get(`/api/users/${userId}`)
-          .expect(200, expectedUser)
-      })
-    })
-
-    context('Given an XSS attack user', () => {
-      const { maliciousUser, expectedUser } = makeMaliciousUser()
-
-      beforeEach('insert malicious user', () => {
-        return db.into('users').insert([maliciousUser])
-      })
-
-      it('removes XSS attack content', () => {
-        return supertest(app)
-          .get(`/api/users/${maliciousUser.id}`)
-          .expect(200)
-          .expect((res) => {
-            expect(res.body.username).to.eql(expectedUser.username)
-            expect(res.body.password).to.eql(expectedUser.password)
-          })
-      })
-    })
-  })
-
   describe(`POST /api/users`, () => {
-    context('When posting a user with required field', () => {
-      it('creates a user, responding with 201 and new user', () => {
+    context(`User Validation`, () => {
+      beforeEach('insert users', () => {
+        return db.into('users').insert(testUsers)
+      })
+
+      const requiredFields = ['username', 'password']
+
+      requiredFields.forEach((field) => {
+        const registerAttemptBody = {
+          username: 'test username',
+          password: 'test password',
+        }
+
+        it(`responds with 400 required error when '${field}' is missing`, () => {
+          delete registerAttemptBody[field]
+
+          return supertest(app)
+            .post('/api/users')
+            .send(registerAttemptBody)
+            .expect(400, {
+              error: `Missing '${field}' in request body`,
+            })
+        })
+      })
+
+      it(`responds 400 'Password be longer than 8 characters' when empty password`, () => {
+        const userShortPassword = {
+          username: 'test username',
+          password: '1234567',
+        }
+        return supertest(app)
+          .post('/api/users')
+          .send(userShortPassword)
+          .expect(400, { error: `Password be longer than 8 characters` })
+      })
+
+      it(`responds 400 'Password be less than 72 characters' when long password`, () => {
+        const userLongPassword = {
+          username: 'test username',
+          password: '*'.repeat(73),
+        }
+        return supertest(app)
+          .post('/api/users')
+          .send(userLongPassword)
+          .expect(400, { error: `Password be less than 72 characters` })
+      })
+
+      it(`responds 400 error when password starts with spaces`, () => {
+        const userPasswordStartsSpaces = {
+          username: 'test username',
+          password: ' 1Aa!2Bb@',
+        }
+        return supertest(app)
+          .post('/api/users')
+          .send(userPasswordStartsSpaces)
+          .expect(400, {
+            error: `Password must not start or end with empty spaces`,
+          })
+      })
+
+      it(`responds 400 error when password ends with spaces`, () => {
+        const userPasswordEndsSpaces = {
+          username: 'test username',
+          password: '1Aa!2Bb@ ',
+        }
+        return supertest(app)
+          .post('/api/users')
+          .send(userPasswordEndsSpaces)
+          .expect(400, {
+            error: `Password must not start or end with empty spaces`,
+          })
+      })
+
+      it(`responds 400 error when password isn't complex enough`, () => {
+        const userPasswordNotComplex = {
+          username: 'test username',
+          password: '11AAaabb',
+        }
+        return supertest(app)
+          .post('/api/users')
+          .send(userPasswordNotComplex)
+          .expect(400, {
+            error: `Password must contain one upper case, lower case, number and special character`,
+          })
+      })
+
+      it(`responds 400 'User name already taken' when username isn't unique`, () => {
+        const duplicateUser = {
+          username: testUser.username,
+          password: '11AAaa!!',
+        }
+        return supertest(app)
+          .post('/api/users')
+          .send(duplicateUser)
+          .expect(400, { error: `Username already taken` })
+      })
+    })
+
+    context(`Happy path`, () => {
+      it(`responds 201, serialized user, storing bcryped password`, () => {
         const newUser = {
-          username: 'Sonic',
-          password: 'the Hedgehog',
+          username: 'test username',
+          password: '11AAaa!!',
         }
         return supertest(app)
           .post('/api/users')
           .send(newUser)
           .expect(201)
           .expect((res) => {
-            expect(res.body.username).to.eql(newUser.username)
-            expect(res.body.password).to.eql(newUser.password)
             expect(res.body).to.have.property('id')
+            expect(res.body.username).to.eql(newUser.username)
+            expect(res.body).to.not.have.property('password')
             expect(res.headers.location).to.eql(`/api/users/${res.body.id}`)
           })
-          .then((res) => {
-            supertest(app).get(`/api/users/${res.body.id}`).expect(res.body)
-          })
-      })
-    })
-    context('When posting a user without required field', () => {
-      const requiredFields = ['username', 'password']
-
-      requiredFields.forEach((field) => {
-        const newUser = {
-          username: 'test user',
-          password: 'secret',
-        }
-        it(`responds with 400 and an error message '${field}' is missing`, () => {
-          delete newUser[field]
-
-          return supertest(app)
-            .post('/api/users')
-            .send(newUser)
-            .expect(400, {
-              error: { message: `Missing '${field}' in request body` },
-            })
-        })
-      })
-    })
-  })
-
-  describe('DELETE /api/users', () => {
-    context('Given user does not exist', () => {
-      it('responds with 404', () => {
-        const userId = 123456
-        return supertest(app)
-          .delete(`/api/users/${userId}`)
-          .expect(404, { error: { message: `User doesn't exist` } })
-      })
-    })
-
-    context('Given there is a user in the database matching id', () => {
-      const testUsers = makeUsersArray()
-
-      beforeEach('insert users', () => {
-        return db.into('users').insert(testUsers)
-      })
-
-      it('responds with 204 and removes the user', () => {
-        const idToRemove = 2
-        const expectedUser = testUsers.filter((user) => user.id !== idToRemove)
-        return supertest(app)
-          .delete(`/api/users/${idToRemove}`)
-          .expect(204)
-          .then((res) => {
-            supertest(app).get(`/api/users`).expect(expectedUser)
-          })
-      })
-    })
-  })
-
-  describe('PATCH /api/users/:user_id', () => {
-    context('Given no users', () => {
-      it('responds with 404', () => {
-        const userId = 123456
-        return supertest(app)
-          .delete(`/api/users/${userId}`)
-          .expect(404, { error: { message: `User doesn't exist` } })
-      })
-    })
-
-    context('Given there are users in the database', () => {
-      const testUsers = makeUsersArray()
-
-      beforeEach('insert users', () => {
-        return db.into('users').insert(testUsers)
-      })
-
-      it('responds with 204 and updates the user', () => {
-        const idToUpdate = 2
-        const updateUser = {
-          username: 'updated username',
-          password: 'updated password',
-        }
-        const expectedUser = {
-          ...testUsers[idToUpdate - 1],
-          ...updateUser,
-        }
-        return supertest(app)
-          .patch(`/api/users/${idToUpdate}`)
-          .send(updateUser)
-          .expect(204)
-          .then((res) => {
-            supertest(app).get(`/api/users/${idToUpdate}`).expect(expectedUser)
-          })
+          .expect((res) =>
+            db
+              .from('users')
+              .select('*')
+              .where({ id: res.body.id })
+              .first()
+              .then((row) => {
+                expect(row.username).to.eql(newUser.username)
+                return bcrypt.compare(newUser.password, row.password)
+              })
+              .then((compareMatch) => {
+                expect(compareMatch).to.be.true
+              })
+          )
       })
     })
   })

@@ -32,8 +32,6 @@ usersRouter
           error: `Missing '${field}' in request body`,
         })
 
-    // TODO: check username doesn't start with spaces
-
     const passwordError = UsersService.validatePassword(password)
 
     if (passwordError) return res.status(400).json({ error: passwordError })
@@ -58,49 +56,6 @@ usersRouter
             }
           )
         })
-      })
-      .catch(next)
-  })
-
-usersRouter
-  .route('/:user_id')
-  .all((req, res, next) => {
-    UsersService.getById(req.app.get('db'), req.params.user_id)
-      .then((user) => {
-        if (!user) {
-          return res.status(404).json({
-            error: { message: `User doesn't exist` },
-          })
-        }
-        res.user = user
-        next()
-      })
-      .catch(next)
-  })
-  .get((req, res, next) => {
-    res.json(serializeUser(res.user))
-  })
-  .delete((req, res, next) => {
-    UsersService.deleteUser(req.app.get('db'), req.params.user_id)
-      .then((numRowsAffected) => {
-        res.status(204).end()
-      })
-      .catch(next)
-  })
-  .patch(jsonParser, (req, res, next) => {
-    const { username, password } = req.body
-    const userToUpdate = { username, password }
-
-    const numberOfValues = Object.values(userToUpdate).filter(Boolean).length
-    if (numberOfValues === 0)
-      return res.status(400).json({
-        error: {
-          message: `Request body must contain either 'username' or 'password'`,
-        },
-      })
-    UsersService.updateUser(req.app.get('db'), req.params.user_id, userToUpdate)
-      .then((numRowsAffected) => {
-        res.status(204).end()
       })
       .catch(next)
   })
