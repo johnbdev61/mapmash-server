@@ -22,6 +22,26 @@ function makeMashesArray() {
   ]
 }
 
+function makeVotesArray() {
+  return [
+    {
+      is_upvote: true,
+      mashes_id: 1,
+      users_id: 1,
+    },
+    {
+      is_upvote: true,
+      mashes_id: 2,
+      users_id: 2,
+    },
+    {
+      is_upvote: true,
+      mashes_id: 3,
+      users_id: 3,
+    },
+  ]
+}
+
 function makeBindsArray() {
   return [
     {
@@ -58,4 +78,9 @@ function makeMaliciousMash() {
   }
 }
 
-module.exports = { makeMashesArray, makeBindsArray, makeMaliciousMash }
+module.exports = {
+  makeMashesArray,
+  makeVotesArray,
+  makeBindsArray,
+  makeMaliciousMash,
+}

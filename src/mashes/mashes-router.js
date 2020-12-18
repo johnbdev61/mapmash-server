@@ -19,8 +19,14 @@ mashesRouter
       }
       return arr
     }
-    MashesService.getAllMashes(req.app.get('db'))
+    console.log(req.query)
+    const userId = req.query.user_id
+    const getAllMashes = userId
+      ? MashesService.getByUserId
+      : MashesService.getAllMashes
+    getAllMashes(req.app.get('db'), userId)
       .then(async (mashes) => {
+        console.log(mashes)
         if (mashes.length !== 0) {
           const votes = await getVotes(req.app.get('db'), mashes)
           return mashes.map((mash, i) => ({
@@ -36,13 +42,13 @@ mashesRouter
       .catch(next)
   })
   .post(jsonParser, requireAuth, (req, res, next) => {
-    const { game_title, notes } = req.body
+    const { game_title, notes, votes } = req.body
     let newMash = {
       game_title,
       notes,
       author_id: req.user.id,
+      votes,
     }
-    console.log('REQUSER', req.user)
     for (const [key, value] of Object.entries(newMash)) {
       if (value == null) {
         return res.status(400).json({
@@ -55,6 +61,7 @@ mashesRouter
       game_title: xss(game_title),
       notes: xss(notes),
       author_id: req.user.id,
+      votes,
     }
 
     MashesService.insertMash(req.app.get('db'), newMash)

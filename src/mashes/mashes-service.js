@@ -15,6 +15,9 @@ const MashesService = {
   getById(knex, id) {
     return knex.from('mashes').select('*').where('id', id).first()
   },
+  getByUserId(knex, authorId) {
+    return knex.from('mashes').select('*').where({ author_id: authorId })
+  },
   deleteMash(knex, id) {
     return knex('mashes').where({ id }).delete()
   },

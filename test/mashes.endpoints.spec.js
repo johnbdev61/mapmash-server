@@ -7,12 +7,13 @@ const {
   makeMashesArray,
   makeBindsArray,
   makeMaliciousMash,
+  makeVotesArray,
 } = require('./mashes.fixtures')
 const { makeUsersArray } = require('./users.fixtures')
 const { truncateAllTables, makeAuthHeader } = require('./test-helpers')
 const { getBindsByMash, getAllMashes } = require('../src/mashes/mashes-service')
 
-describe('Mashes Endpoints', () => {
+describe.only('Mashes Endpoints', () => {
   let db
 
   before('make knex instance', () => {
@@ -39,6 +40,7 @@ describe('Mashes Endpoints', () => {
     context('Given there are mashes in the database', () => {
       const testUsers = makeUsersArray()
       const testMashes = makeMashesArray()
+      const testVotes = makeVotesArray()
 
       beforeEach('insert mashes', () => {
         return db
@@ -46,6 +48,9 @@ describe('Mashes Endpoints', () => {
           .insert(testUsers)
           .then(() => {
             return db.into('mashes').insert(testMashes)
+          })
+          .then(() => {
+            return db.into('votes').insert(testVotes)
           })
       })
 
