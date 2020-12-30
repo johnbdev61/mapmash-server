@@ -10,7 +10,7 @@ const jsonParser = express.json()
 
 mashesRouter
   .route('/')
-  .get(async (req, res, next) => {
+  .get(requireAuth, async (req, res, next) => {
     async function getVotes(knex, mashes) {
       const arr = []
       for (let i = 0; i < mashes.length; i++) {
@@ -20,7 +20,8 @@ mashesRouter
       return arr
     }
     console.log(req.query)
-    const userId = req.query.user_id
+    const userId = req.user.id
+    console.log(userId)
     const getAllMashes = userId
       ? MashesService.getByUserId
       : MashesService.getAllMashes
@@ -38,7 +39,10 @@ mashesRouter
           }))
         }
       })
-      .then((mashes) => res.json(mashes))
+      .then((mashes) => {
+        console.log(mashes)
+        return res.json(mashes || [])
+      })
       .catch(next)
   })
   .post(jsonParser, requireAuth, (req, res, next) => {
@@ -47,7 +51,6 @@ mashesRouter
       game_title,
       notes,
       author_id: req.user.id,
-      votes,
     }
     for (const [key, value] of Object.entries(newMash)) {
       if (value == null) {
@@ -61,7 +64,6 @@ mashesRouter
       game_title: xss(game_title),
       notes: xss(notes),
       author_id: req.user.id,
-      votes,
     }
 
     MashesService.insertMash(req.app.get('db'), newMash)
@@ -77,7 +79,7 @@ mashesRouter
   .all((req, res, next) => {
     MashesService.getById(
       req.app.get('db'),
-      req.params.mash_id // JOHN: double check this for error
+      req.params.mash_id
     )
       .then((mash) => {
         if (!mash) {

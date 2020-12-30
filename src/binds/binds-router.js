@@ -27,29 +27,24 @@ bindsRouter
       .catch(next)
   })
   .post((req, res, next) => {
-    const { key_input, key_action } = req.body
-    let newBind = {
-      key_input,
-      key_action,
-    }
-
-    for (const [key, value] of Object.entries(newBind)) {
-      if (value == null) {
-        return res.status(400).json({
-          error: { message: `Missing ${key} in request body` },
-        })
+    const bindArr = [...req.body]
+    for (const value of bindArr) {
+      if (value.key_action === '') {
+        value.key_action = 'Not Used'
+      } else {
+        value.key_action = xss(value.key_action)
       }
     }
-
-    newBind = {
-      key_input: key_input,
-      key_action: xss(key_action),
+    console.log('BIND ARRAY', bindArr)
+    const insertBindPromises = []
+    for (const bind of bindArr) {
+      //TODO: Promise All
+      insertBindPromises.push(BindsService.insertBind(req.app.get('db'), bind))
     }
-
-    BindsService.insertBind(req.app.get('db'), newBind)
+    Promise.all(insertBindPromises)
       .then((binds) => {
-        const bind = binds[0]
-        res.status(201).location(`/api/binds/${bind.id}`).json(bind)
+        console.log('RESULTS', binds)
+        res.status(201).json(binds)
       })
       .catch(next)
   })
@@ -57,10 +52,7 @@ bindsRouter
 bindsRouter
   .route('/:bind_id')
   .all((req, res, next) => {
-    BindsService.getById(
-      req.app.get('db'),
-      req.params.bind_id // JOHN: double check this for error
-    )
+    BindsService.getById(req.app.get('db'), req.params.bind_id)
       .then((bind) => {
         if (!bind) {
           return res.status(404).json({
@@ -100,11 +92,7 @@ bindsRouter
       })
     }
 
-    BindsService.updateBind(
-      req.app.get('db'),
-      req.params.bind_id, // JOHN: DOUBLE CHECK FOR ERROR
-      bindToUpdate
-    )
+    BindsService.updateBind(req.app.get('db'), req.params.bind_id, bindToUpdate)
       .then((numRowsAffected) => {
         res.status(204).end()
       })
