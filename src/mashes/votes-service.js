@@ -22,7 +22,7 @@ const VotesService = {
   },
 
   insertVote(knex, newVote) {
-    return knex.insert(newVote).into('votes').returning('*')
+    return knex.insert(newVote).into('votes')
   },
 
   getById(knex, id) {

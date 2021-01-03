@@ -19,15 +19,8 @@ mashesRouter
       }
       return arr
     }
-    console.log(req.query)
-    const userId = req.user.id
-    console.log(userId)
-    const getAllMashes = userId
-      ? MashesService.getByUserId
-      : MashesService.getAllMashes
-    getAllMashes(req.app.get('db'), userId)
+    MashesService.getAllMashes(req.app.get('db'))
       .then(async (mashes) => {
-        console.log(mashes)
         if (mashes.length !== 0) {
           const votes = await getVotes(req.app.get('db'), mashes)
           return mashes.map((mash, i) => ({
@@ -36,17 +29,17 @@ mashesRouter
             notes: xss(mash.notes), // sanitize content
             date_modified: mash.date_modified,
             votes: votes[i],
+            author_id: mash.author_id,
           }))
         }
       })
       .then((mashes) => {
-        console.log(mashes)
         return res.json(mashes || [])
       })
       .catch(next)
   })
   .post(jsonParser, requireAuth, (req, res, next) => {
-    const { game_title, notes, votes } = req.body
+    const { game_title, notes } = req.body
     let newMash = {
       game_title,
       notes,
@@ -77,10 +70,8 @@ mashesRouter
 mashesRouter
   .route('/:mash_id')
   .all((req, res, next) => {
-    MashesService.getById(
-      req.app.get('db'),
-      req.params.mash_id
-    )
+    console.log('buuutttttcheeeeks')
+    MashesService.getById(req.app.get('db'), req.params.mash_id)
       .then((mash) => {
         if (!mash) {
           return res.status(404).json({
@@ -102,6 +93,7 @@ mashesRouter
             notes: xss(res.mash.notes), // sanitize content
             binds,
             date_modified: res.mash.date_modified,
+            author_id: res.mash.author_id,
           })
           .catch(next)
       }
@@ -138,7 +130,5 @@ mashesRouter
       })
       .catch(next)
   })
-
-mashesRouter.route('/votes/:mash_id')
 
 module.exports = mashesRouter
