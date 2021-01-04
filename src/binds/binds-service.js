@@ -15,9 +15,6 @@ const BindsService = {
   deleteBind(knex, id) {
     return knex('bind').where({ id }).delete()
   },
-  updateBind(knex, id, newBindFields) {
-    return knex('bind').where({ id }).update(newBindFields)
-  },
 }
 
 module.exports = BindsService

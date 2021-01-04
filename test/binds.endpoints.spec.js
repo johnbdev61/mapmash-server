@@ -202,72 +202,72 @@ describe('Binds Endpoints', () => {
     })
   })
 
-  describe('PATCH /api/binds/:bind_id', () => {
-    context('Given no binds', () => {
-      it('responds with 404', () => {
-        const bindId = 123456
-        return supertest(app)
-          .delete(`/api/binds/${bindId}`)
-          .expect(404, { error: { message: 'Bind does not exist' } })
-      })
-    })
+  // describe('PATCH /api/binds/:bind_id', () => {
+  //   context('Given no binds', () => {
+  //     it('responds with 404', () => {
+  //       const bindId = 123456
+  //       return supertest(app)
+  //         .delete(`/api/binds/${bindId}`)
+  //         .expect(404, { error: { message: 'Bind does not exist' } })
+  //     })
+  //   })
 
-    context('Given there are binds in the database', () => {
-      const testUsers = makeUsersArray()
-      const testMashes = makeMashesArray()
-      const testBinds = makeBindsArray()
+  //   context('Given there are binds in the database', () => {
+  //     const testUsers = makeUsersArray()
+  //     const testMashes = makeMashesArray()
+  //     const testBinds = makeBindsArray()
 
-      beforeEach('insert binds', () => {
-        return db
-          .into('users')
-          .insert(testUsers)
-          .then(() => {
-            return db.into('mashes').insert(testMashes)
-          })
-          .then(() => {
-            return db.into('bind').insert(testBinds)
-          })
-      })
+  //     beforeEach('insert binds', () => {
+  //       return db
+  //         .into('users')
+  //         .insert(testUsers)
+  //         .then(() => {
+  //           return db.into('mashes').insert(testMashes)
+  //         })
+  //         .then(() => {
+  //           return db.into('bind').insert(testBinds)
+  //         })
+  //     })
 
-      it('responds with 204 and updates the bind', () => {
-        const idToUpdate = 2
-        const updateBind = {
-          key_input: 'updated button',
-          key_action: 'updated action',
-        }
-        const expectedBind = {
-          ...testBinds[idToUpdate - 1],
-          ...updateBind,
-        }
-        return supertest(app)
-          .patch(`/api/binds/${idToUpdate}`)
-          .send(updateBind)
-          .expect(204)
-          .then((res) =>
-            supertest(app).get(`/api/binds/${idToUpdate}`).expect(expectedBind)
-          )
-      })
+  //     it('responds with 204 and updates the bind', () => {
+  //       const idToUpdate = 2
+  //       const updateBind = {
+  //         key_input: 'updated button',
+  //         key_action: 'updated action',
+  //       }
+  //       const expectedBind = {
+  //         ...testBinds[idToUpdate - 1],
+  //         ...updateBind,
+  //       }
+  //       return supertest(app)
+  //         .patch(`/api/binds/${idToUpdate}`)
+  //         .send(updateBind)
+  //         .expect(204)
+  //         .then((res) =>
+  //           supertest(app).get(`/api/binds/${idToUpdate}`).expect(expectedBind)
+  //         )
+  //     })
 
-      it('responds with 204 when updating only a subset of fields', () => {
-        const idToUpdate = 2
-        const updateBind = {
-          key_action: 'updated action',
-        }
-        const expectedBind = {
-          ...testBinds[idToUpdate - 1],
-          ...updateBind,
-        }
-        return supertest(app)
-          .patch(`/api/binds/${idToUpdate}`)
-          .send({
-            ...updateBind,
-            fieldToIgnore: 'should not be in GET response',
-          })
-          .expect(204)
-          .then((res) =>
-            supertest(app).get(`/api/binds/${idToUpdate}`).expect(expectedBind)
-          )
-      })
-    })
-  })
+  //     it('responds with 204 when updating only a subset of fields', () => {
+  //       const idToUpdate = 2
+  //       const updateBind = {
+  //         key_action: 'updated action',
+  //       }
+  //       const expectedBind = {
+  //         ...testBinds[idToUpdate - 1],
+  //         ...updateBind,
+  //       }
+  //       return supertest(app)
+  //         .patch(`/api/binds/${idToUpdate}`)
+  //         .send({
+  //           ...updateBind,
+  //           fieldToIgnore: 'should not be in GET response',
+  //         })
+  //         .expect(204)
+  //         .then((res) =>
+  //           supertest(app).get(`/api/binds/${idToUpdate}`).expect(expectedBind)
+  //         )
+  //     })
+  //   })
+  // })
 })

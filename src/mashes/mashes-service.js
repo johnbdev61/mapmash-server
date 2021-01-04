@@ -21,9 +21,6 @@ const MashesService = {
   deleteMash(knex, id) {
     return knex('mashes').where({ id }).delete()
   },
-  updateMash(knex, id, newMashFields) {
-    return knex('mashes').where({ id }).update(newMashFields)
-  },
 }
 
 module.exports = MashesService

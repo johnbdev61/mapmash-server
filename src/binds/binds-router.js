@@ -79,24 +79,5 @@ bindsRouter
       })
       .catch(next)
   })
-  .patch(jsonParser, (req, res, next) => {
-    const { key_input, key_action } = req.body
-    const bindToUpdate = { key_input, key_action }
-    const numberOfValues = Object.values(bindToUpdate).filter(Boolean).length
-
-    if (numberOfValues === 0) {
-      return res.status(400).json({
-        error: {
-          message: `Request body must contain either 'key_input' or 'key_action'`,
-        },
-      })
-    }
-
-    BindsService.updateBind(req.app.get('db'), req.params.bind_id, bindToUpdate)
-      .then((numRowsAffected) => {
-        res.status(204).end()
-      })
-      .catch(next)
-  })
 
 module.exports = bindsRouter

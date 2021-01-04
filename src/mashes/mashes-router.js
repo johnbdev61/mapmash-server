@@ -107,28 +107,5 @@ mashesRouter
       })
       .catch(next)
   })
-  .patch(jsonParser, requireAuth, (req, res, next) => {
-    const { game_title, notes } = req.body
-    const mashToUpdate = { game_title, notes }
-    const numberOfValues = Object.values(mashToUpdate).filter(Boolean).length
-
-    if (numberOfValues === 0) {
-      return res.status(400).json({
-        error: {
-          message: `Request body must contain either 'game_title' or 'notes'`,
-        },
-      })
-    }
-
-    MashesService.updateMash(
-      req.app.get('db'),
-      req.params.mash_id,
-      mashToUpdate
-    )
-      .then((numRowsAffected) => {
-        res.status(204).end()
-      })
-      .catch(next)
-  })
 
 module.exports = mashesRouter

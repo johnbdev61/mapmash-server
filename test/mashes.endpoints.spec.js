@@ -249,83 +249,83 @@ describe('Mashes Endpoints', () => {
     })
   })
 
-  describe('PATCH /api/mashes/:mash_id', () => {
-    context('Given no mashes', () => {
-      it('responds with 404', () => {
-        const mashId = 123456
-        return supertest(app)
-          .delete(`/api/mashes/${mashId}`)
-          .expect(404, { error: { message: 'Mash does not exist' } })
-      })
-    })
+  // describe('PATCH /api/mashes/:mash_id', () => {
+  //   context('Given no mashes', () => {
+  //     it('responds with 404', () => {
+  //       const mashId = 123456
+  //       return supertest(app)
+  //         .delete(`/api/mashes/${mashId}`)
+  //         .expect(404, { error: { message: 'Mash does not exist' } })
+  //     })
+  //   })
 
-    context('Given there are mashes in the database', () => {
-      const testUsers = makeUsersArray()
-      const testUser = testUsers[0]
-      const testMashes = makeMashesArray()
-      const testBinds = makeBindsArray()
-      beforeEach('cleanup', () => truncateAllTables(db)) //I DON"T KNOW WHY THIS HAD TO BE DONE
-      beforeEach('insert mashes', () => {
-        return db
-          .select('*')
-          .from('users')
-          .then((users) => console.log(users))
-          .then(() =>
-            db
-              .into('users')
-              .insert(testUsers)
-              .then(() => {
-                return db.into('mashes').insert(testMashes)
-              })
-              .then(() => {
-                return db.into('bind').insert(testBinds)
-              })
-          )
-      })
+  //   context('Given there are mashes in the database', () => {
+  //     const testUsers = makeUsersArray()
+  //     const testUser = testUsers[0]
+  //     const testMashes = makeMashesArray()
+  //     const testBinds = makeBindsArray()
+  //     beforeEach('cleanup', () => truncateAllTables(db)) //I DON"T KNOW WHY THIS HAD TO BE DONE
+  //     beforeEach('insert mashes', () => {
+  //       return db
+  //         .select('*')
+  //         .from('users')
+  //         .then((users) => console.log(users))
+  //         .then(() =>
+  //           db
+  //             .into('users')
+  //             .insert(testUsers)
+  //             .then(() => {
+  //               return db.into('mashes').insert(testMashes)
+  //             })
+  //             .then(() => {
+  //               return db.into('bind').insert(testBinds)
+  //             })
+  //         )
+  //     })
 
-      it('responds with 204 and updates the mash', () => {
-        const idToUpdate = 2
-        const updateMash = {
-          game_title: 'updated mash game title',
-          notes: 'updated mash notes',
-        }
-        const expectedMash = {
-          ...testMashes[idToUpdate - 1],
-          ...updateMash,
-        }
-        expectedMash.binds = testBinds
-        return supertest(app)
-          .patch(`/api/mashes/${idToUpdate}`)
-          .set('Authorization', makeAuthHeader(testUser))
-          .send(updateMash)
-          .expect(204)
-          .then((res) =>
-            supertest(app).get(`/api/mashes/${idToUpdate}`).expect(expectedMash)
-          )
-      })
+  //     it('responds with 204 and updates the mash', () => {
+  //       const idToUpdate = 2
+  //       const updateMash = {
+  //         game_title: 'updated mash game title',
+  //         notes: 'updated mash notes',
+  //       }
+  //       const expectedMash = {
+  //         ...testMashes[idToUpdate - 1],
+  //         ...updateMash,
+  //       }
+  //       expectedMash.binds = testBinds
+  //       return supertest(app)
+  //         .patch(`/api/mashes/${idToUpdate}`)
+  //         .set('Authorization', makeAuthHeader(testUser))
+  //         .send(updateMash)
+  //         .expect(204)
+  //         .then((res) =>
+  //           supertest(app).get(`/api/mashes/${idToUpdate}`).expect(expectedMash)
+  //         )
+  //     })
 
-      it('responds with 204 when updating only a subset of fields', () => {
-        const idToUpdate = 2
-        const updateMash = {
-          game_title: 'updated mash game title',
-        }
-        const expectedMash = {
-          ...testMashes[idToUpdate - 1],
-          ...updateMash,
-        }
-        expectedMash.binds = testBinds
-        return supertest(app)
-          .patch(`/api/mashes/${idToUpdate}`)
-          .set('Authorization', makeAuthHeader(testUser))
-          .send({
-            ...updateMash,
-            fieldToIgnore: 'should not be in GET response',
-          })
-          .expect(204)
-          .then((res) =>
-            supertest(app).get(`/api/mashes/${idToUpdate}`).expect(expectedMash)
-          )
-      })
-    })
-  })
+  //     it('responds with 204 when updating only a subset of fields', () => {
+  //       const idToUpdate = 2
+  //       const updateMash = {
+  //         game_title: 'updated mash game title',
+  //       }
+  //       const expectedMash = {
+  //         ...testMashes[idToUpdate - 1],
+  //         ...updateMash,
+  //       }
+  //       expectedMash.binds = testBinds
+  //       return supertest(app)
+  //         .patch(`/api/mashes/${idToUpdate}`)
+  //         .set('Authorization', makeAuthHeader(testUser))
+  //         .send({
+  //           ...updateMash,
+  //           fieldToIgnore: 'should not be in GET response',
+  //         })
+  //         .expect(204)
+  //         .then((res) =>
+  //           supertest(app).get(`/api/mashes/${idToUpdate}`).expect(expectedMash)
+  //         )
+  //     })
+  //   })
+  // })
 })

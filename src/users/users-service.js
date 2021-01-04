@@ -23,9 +23,6 @@ const UsersService = {
   deleteUser(knex, id) {
     return knex('users').where({ id }).delete()
   },
-  updateUser(knex, id, newUserFields) {
-    return knex('users').where({ id }).update(newUserFields)
-  },
   hasUserWithUserName(db, username) {
     return db('users')
       .where({ username })
