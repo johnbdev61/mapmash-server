@@ -3,10 +3,10 @@ BEGIN;
 INSERT INTO users
   (username, password)
 VALUES
-  ('kind-grader', '&Passkey123'),
-  ('wade_thrillson117', '&Passkey456'),
-  ('johnnyFrags123', '&Passkey789'),
-  ('fire-starter312', '&Passkey101');
+  ('kind-grader', '$2a$12$Lo7qG5OeK4CMFVQTfAoSUef1qQTmiFYb330kq8I1q9mi74c/1wJca'),
+  ('wade_thrillson117', '$2a$12$5OPIZ6ghICDaPDV1qaB1P.MsU4LCivHHP/NOrqbWMhDXxDQuOGFou'),
+  ('johnnyFrags123', '$2a$12$0A9hYATytlCxuPKVr7wbvO1tqUAsbtMqqGL/0Ihub89XfgrhGv1LG'),
+  ('fire-starter312', '$2a$12$WnsWtRre3gFNvbsLYYl6/OzFJ6eh/zUtCioEFw5umKK7uUk/aNAFO');
 
 INSERT INTO mashes
   (game_title, notes, author_id)
