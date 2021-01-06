@@ -1,7 +1,10 @@
 /* eslint-disable semi */
 const MashesService = {
   getAllMashes(knex) {
-    return knex.select('*').from('mashes')
+    return knex
+      .select('mashes.*', 'users.username')
+      .from('mashes')
+      .leftOuterJoin('users', 'mashes.author_id', '=', 'users.id')
   },
   getBindsByMash(knex, mash_id) {
     return knex.select('*').from('bind').where('mash_id', mash_id)

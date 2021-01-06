@@ -55,6 +55,10 @@ describe('Mashes Endpoints', () => {
       })
 
       it('responds with 200 and all of the mashes', () => {
+        testMashes.forEach((mash) => {
+          mash.username = 'test-user-1'
+          mash.votes = 1
+        })
         return supertest(app).get('/api/mashes').expect(200, testMashes)
       })
     })
@@ -215,7 +219,7 @@ describe('Mashes Endpoints', () => {
       })
     })
 
-    context('Given there is a mash in the database matching id', () => {
+    context.only('Given there is a mash in the database matching id', () => {
       const testUsers = makeUsersArray()
       const testMashes = makeMashesArray()
 
@@ -229,6 +233,10 @@ describe('Mashes Endpoints', () => {
       })
 
       it('responds with 204 and removes the mash', () => {
+        testMashes.forEach((mash) => {
+          mash.username = 'test-user-1'
+          mash.votes = 0
+        })
         const testUsers = makeUsersArray()
         const testUser = testUsers[0]
         beforeEach('insert mashes', () => {

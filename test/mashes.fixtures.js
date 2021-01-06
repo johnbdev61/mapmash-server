@@ -6,18 +6,21 @@ function makeMashesArray() {
       game_title: 'Superman 64',
       notes: 'These notes are for Superman 64',
       date_modified: new Date().toISOString(),
+      author_id: 1,
     },
     {
       id: 2,
       game_title: 'Friday the 13th',
       notes: 'These notes are for Friday the 13th',
       date_modified: new Date().toISOString(),
+      author_id: 1,
     },
     {
       id: 3,
       game_title: 'Shaq Fu',
       notes: 'These notes are for Shaq Fu',
       date_modified: new Date().toISOString(),
+      author_id: 1,
     },
   ]
 }

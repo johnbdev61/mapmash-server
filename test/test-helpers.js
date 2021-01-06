@@ -14,4 +14,12 @@ function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
   return `Bearer ${token}`
 }
 
-module.exports = { truncateAllTables, makeAuthHeader }
+function makeMashesSerialized(testMashes) {
+  testMashes.forEach((mash) => {
+    mash.username = 'test-user-1'
+    mash.votes = 1
+  })
+}
+
+module.exports = { truncateAllTables, makeAuthHeader, makeMashesSerialized }
+        // makeMashesSerialized(testMashes)

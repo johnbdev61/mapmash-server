@@ -137,14 +137,27 @@ describe('Binds Endpoints', () => {
     })
   })
 
-  describe.only(`POST /api/binds`, () => {
+  describe(`POST /api/binds`, () => {
     context('When posting a bind with required field', () => {
+      const testUsers = makeUsersArray()
+      const testMashes = makeMashesArray()
+      const testBinds = makeBindsArray()
+
+      beforeEach('insert mashes', () => {
+        return db
+          .into('users')
+          .insert(testUsers)
+          .then(() => {
+            return db.into('mashes').insert(testMashes)
+          })
+      })
+
       it('creates a bind, responding with 201 and new bind', () => {
         const bindArr = [
           {
-            key_action: 'A Button',
-            key_input: 'Jump',
             mash_id: 2,
+            key_input: 'Jump',
+            key_action: 'A Button',
           },
         ]
         return supertest(app)
@@ -152,10 +165,9 @@ describe('Binds Endpoints', () => {
           .send(bindArr)
           .expect(201)
           .expect((res) => {
-            // expect(res.body.key_input).to.eql(newBind.key_input)
-            // expect(res.body.key_action).to.eql(newBind.key_action)
-            // expect(res.body).to.have.property('id')
-            expect(res.headers.location).to.eql(`/api/binds/${res.body.id}`)
+            expect(res.body[0][0].key_input).to.eql(bindArr[0].key_input)
+            expect(res.body[0][0].key_action).to.eql(bindArr[0].key_action)
+            expect(res.body[0][0]).to.have.property('id')
           })
           .then((res) => {
             supertest(app).get(`/api/binds/${res.body.id}`).expect(res.body)
