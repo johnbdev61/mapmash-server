@@ -4,7 +4,7 @@ const knex = require('knex')
 
 const db = knex({
   client: 'pg',
-  connection: DB_URL + '?sslmode=require',
+  connection: DB_URL + '?ssl=true',
   ssl: { rejectUnauthorized: false },
 })
 
