@@ -35,15 +35,12 @@ bindsRouter
         value.key_action = xss(value.key_action)
       }
     }
-    console.log('BIND ARRAY', bindArr)
     const insertBindPromises = []
     for (const bind of bindArr) {
-      //TODO: Promise All
       insertBindPromises.push(BindsService.insertBind(req.app.get('db'), bind))
     }
     Promise.all(insertBindPromises)
       .then((binds) => {
-        console.log('RESULTS', binds)
         res.status(201).json(binds)
       })
       .catch(next)

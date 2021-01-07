@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 const AuthService = require('../auth/auth-service')
 
 function requireAuth(req, res, next) {

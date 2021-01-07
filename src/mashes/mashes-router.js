@@ -21,10 +21,8 @@ mashesRouter
     }
     MashesService.getAllMashes(req.app.get('db'))
       .then(async (mashes) => {
-        console.log('MASHES', mashes)
         if (mashes.length !== 0) {
           const votes = await getVotes(req.app.get('db'), mashes)
-          console.log(mashes)
           return mashes.map((mash, i) => ({
             id: mash.id,
             game_title: xss(mash.game_title), //sanitize content
@@ -80,7 +78,6 @@ mashesRouter
             error: { message: `Mash does not exist` },
           })
         }
-        console.log(mash)
         res.mash = mash //save the mash for next middleware
         next() //call next so next middleware executes
       })

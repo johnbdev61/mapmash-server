@@ -1,3 +1,4 @@
+/* eslint-disable semi */
 const express = require('express')
 const AuthService = require('./auth-service')
 const { requireAuth } = require('../middleware/jwt-auth')
