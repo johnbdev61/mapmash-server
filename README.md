@@ -4,7 +4,7 @@ Front End Link: https://map-mash.netlify.app
 
 ## This is the API for the Map Mash Client
 
-This is the Map Mash Client, which is an application that allows users to create their custom controller button configurations (Mashes) for their favorite video games. The mash cards for these mashes will appear on the homepage. The game titles may be clicked to reveal the mash with a button/action table and the notes.
+This isMap Mash, which is an application that allows users to create their custom controller button configurations (Mashes) for their favorite video games. The mash cards for these mashes will appear on the homepage. The game titles may be clicked to reveal the mash with a button/action table and the notes.
 
 The user is required to enter a game title, and they may enter an action for each button on the controller. Any action left blank will be assigned the string 'Not Used'. The user may also enter any notes about their Mash they want to make. The user may also delete a mash.
 
